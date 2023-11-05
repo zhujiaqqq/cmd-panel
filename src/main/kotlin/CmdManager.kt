@@ -1,22 +1,36 @@
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.BufferedReader
 import java.io.InputStreamReader
+import java.lang.Thread.sleep
+import kotlin.concurrent.thread
 
 object CmdManager {
-
-    fun getCurrentDevices(scope: CoroutineScope, callback: (List<String>) -> Unit) {
-        scope.launch {
+    private val devicesFlow = MutableStateFlow<List<String>>(emptyList())
+    var scope: CoroutineScope? = null
+    fun getDevicesFlow() = devicesFlow
+    private fun getCurrentDevices() {
+        scope?.launch {
             val process = sendCmd("adb devices")
             val inputList = getInput(process)
             if (inputList.isEmpty() || inputList[0] != "List of devices attached") {
-                println("no divices")
-                callback(emptyList())
+                println("no devices")
+                devicesFlow.emit(emptyList())
                 return@launch
             }
-            callback(inputList.drop(1))
+            devicesFlow.emit(inputList.drop(1))
+        }
+    }
+
+    init {
+        thread {
+            while (true) {
+                getCurrentDevices()
+                sleep(1000)
+            }
         }
     }
 

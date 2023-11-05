@@ -29,17 +29,21 @@ fun App(scope: CoroutineScope) {
 
     var connectState by remember { mutableStateOf(0) }
     var deviceName by remember { mutableStateOf("") }
-    CmdManager.getCurrentDevices(scope) { devices ->
-        connectState = when {
-            devices.isEmpty() -> 0
-            devices.size == 1 -> 1
-            else -> 2
-        }
-        if (connectState == 1) {
-            val split = devices.last().split("\t")
-            deviceName = "${split[1]}-${split[0]}"
+    CmdManager.scope = scope
+    scope.launch {
+        CmdManager.getDevicesFlow().collect { devices ->
+            connectState = when {
+                devices.isEmpty() -> 0
+                devices.size == 1 -> 1
+                else -> 2
+            }
+            if (connectState == 1) {
+                val split = devices.last().split("\t")
+                deviceName = "${split[1]}-${split[0]}"
+            }
         }
     }
+
     MaterialTheme {
         Scaffold(
             topBar = {
