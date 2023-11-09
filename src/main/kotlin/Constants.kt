@@ -1,0 +1,3 @@
+const val NO_DEVICE_STATE = 0
+const val DEVICE_CONNECTED_STATE = 1
+const val MULTIPLE_DEVICES_STATE = 2

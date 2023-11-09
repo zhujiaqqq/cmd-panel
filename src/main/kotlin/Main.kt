@@ -27,19 +27,19 @@ fun App(scope: CoroutineScope) {
 
     var sliderPosition by remember { mutableStateOf(0f) }
 
-    var connectState by remember { mutableStateOf(0) }
+    var connectState by remember { mutableStateOf(NO_DEVICE_STATE) }
     var deviceName by remember { mutableStateOf("") }
     CmdManager.scope = scope
     scope.launch {
         CmdManager.getDevicesFlow().collect { devices ->
             connectState = when {
-                devices.isEmpty() -> 0
-                devices.size == 1 -> 1
-                else -> 2
+                devices.isEmpty() -> NO_DEVICE_STATE
+                devices.size == 1 -> DEVICE_CONNECTED_STATE
+                else -> MULTIPLE_DEVICES_STATE
             }
-            if (connectState == 1) {
+            if (connectState == DEVICE_CONNECTED_STATE) {
                 val split = devices.last().split("\t")
-                deviceName = "${split[1]}-${split[0]}"
+                deviceName = "${split[DEVICE_CONNECTED_STATE]}-${split[NO_DEVICE_STATE]}"
             }
         }
     }
@@ -50,14 +50,7 @@ fun App(scope: CoroutineScope) {
                 TopAppBar(
                     title = { Text(text = "Cmd Panel") },
                     actions = {
-                        Text(
-                            modifier = Modifier.padding(0.dp, 0.dp, 16.dp, 0.dp),
-                            text = when (connectState) {
-                                0 -> "No device connected"
-                                1 -> "Device connected: $deviceName"
-                                else -> "Multiple devices connected"
-                            }
-                        )
+                        DeviceConnectState(connectState, deviceName)
                     }
                 )
             },
@@ -83,6 +76,18 @@ fun App(scope: CoroutineScope) {
             }
         }
     }
+}
+
+@Composable
+private fun DeviceConnectState(connectState: Int, deviceName: String) {
+    Text(
+        modifier = Modifier.padding(NO_DEVICE_STATE.dp, NO_DEVICE_STATE.dp, 16.dp, NO_DEVICE_STATE.dp),
+        text = when (connectState) {
+            NO_DEVICE_STATE -> "No device connected"
+            DEVICE_CONNECTED_STATE -> "Device connected: $deviceName"
+            else -> "Multiple devices connected"
+        }
+    )
 }
 
 
