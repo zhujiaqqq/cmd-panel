@@ -1,0 +1,23 @@
+name: "reboot"
+description: "Reboots the device"
+cmd: "adb reboot"
+retry: 3
+timeout: 10
+---
+name: "logcat"
+description: "Gets the logcat"
+cmd: "adb logcat"
+retry: 3
+timeout: 10
+---
+name: "screenshot"
+description: "Takes a screenshot"
+cmd: "adb shell screencap -p /sdcard/screenshot.png"
+retry: 3
+timeout: 10
+---
+name: "pull"
+description: "Pulls a file from the device"
+cmd: "adb pull /sdcard/screenshot.png"
+retry: 3
+timeout: 10

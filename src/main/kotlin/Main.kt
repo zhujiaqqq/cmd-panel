@@ -1,6 +1,4 @@
 import androidx.compose.desktop.ui.tooling.preview.Preview
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -15,6 +13,8 @@ import androidx.compose.ui.window.Window
 import androidx.compose.ui.window.WindowPosition
 import androidx.compose.ui.window.application
 import androidx.compose.ui.window.rememberWindowState
+import components.CmdGrid
+import entity.Cmd
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -29,6 +29,7 @@ fun App(scope: CoroutineScope) {
 
     var connectState by remember { mutableStateOf(NO_DEVICE_STATE) }
     var deviceName by remember { mutableStateOf("") }
+    val cmds = remember { mutableStateListOf<Cmd>() }
     CmdManager.scope = scope
     scope.launch {
         CmdManager.getDevicesFlow().collect { devices ->
@@ -55,25 +56,14 @@ fun App(scope: CoroutineScope) {
                 )
             },
             floatingActionButton = {
-                FloatingActionButton(onClick = { }) {
+                FloatingActionButton(onClick = {
+                    cmds.add(Cmd("reboot", "Reboots the device", "adb reboot", 3, 10))
+                }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
             }
         ) {
-            Column(modifier = Modifier.fillMaxSize()) {
-                Button(onClick = { scope.launch { sendCmd("adb reboot") } }) { Text("adb reboot") }
-                Slider(
-                    valueRange = 0f..10f,
-                    value = sliderPosition,
-                    onValueChange = {
-                        sliderPosition = it
-                    },
-                    onValueChangeFinished = {
-
-                    },
-                    steps = 9,
-                )
-            }
+            CmdGrid(cmds.toList())
         }
     }
 }
@@ -100,6 +90,7 @@ suspend fun sendCmd(cmd: String) {
 
 fun main() = application {
     val infiniteLoopScope = rememberCoroutineScope()
+    DataManager.loadData()
     Window(
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(
