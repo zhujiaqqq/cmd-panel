@@ -3,6 +3,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Phone
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -16,16 +17,12 @@ import androidx.compose.ui.window.rememberWindowState
 import components.CmdGrid
 import entity.Cmd
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 @Composable
 @Preview
 fun App(scope: CoroutineScope) {
-
-    var sliderPosition by remember { mutableStateOf(0f) }
 
     var connectState by remember { mutableStateOf(NO_DEVICE_STATE) }
     var deviceName by remember { mutableStateOf("") }
@@ -57,7 +54,10 @@ fun App(scope: CoroutineScope) {
             },
             floatingActionButton = {
                 FloatingActionButton(onClick = {
-                    cmds.add(Cmd("reboot", "Reboots the device", "adb reboot", 3, 10))
+                    if (CmdManager.isLogcating())
+                        CmdManager.stopLogcat()
+                    else
+                        CmdManager.startLogcat(scope)
                 }) {
                     Icon(Icons.Default.Add, contentDescription = "Add")
                 }
@@ -80,17 +80,9 @@ private fun DeviceConnectState(connectState: Int, deviceName: String) {
     )
 }
 
-
-suspend fun sendCmd(cmd: String) {
-    withContext(Dispatchers.IO) {
-        Runtime.getRuntime().exec("adb wait-for-device")
-        Runtime.getRuntime().exec(cmd)
-    }
-}
-
 fun main() = application {
     val infiniteLoopScope = rememberCoroutineScope()
-    DataManager.loadData()
+//    DataManager.loadData()
     Window(
         onCloseRequest = ::exitApplication,
         state = rememberWindowState(

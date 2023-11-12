@@ -12,8 +12,8 @@ object DataManager {
 //                val cmd: Cmd = reader.read(Cmd::class.java) ?: break
 //                println("cmd: $cmd")
 //            }
-            val yaml = Yaml()
-            yaml.loadAs(it,Cmd::class.java)
+//            val yaml = Yaml()
+//            yaml.loadAs(it,Cmd::class.java)
         }
     }
 }
